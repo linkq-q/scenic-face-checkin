@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app import crud
 from app.core.face_engine import encoding_to_str, extract_encoding
+from app.core.matcher import push_to_cache
 from app.core.storage import save_avatar_from_bytes
 from app.database import get_db
 from app.schemas.visitor import VisitorDetail, VisitorRegisterResponse
@@ -53,6 +54,9 @@ async def register_visitor(
     crud.visitor.update_face(
         db, visitor, encoding_to_str(encoding), avatar_path
     )
+
+    # 实时更新内存缓存，让新游客立即可被识别
+    push_to_cache(visitor.id, encoding)
 
     return VisitorRegisterResponse(
         visitor_id=visitor.id,
