@@ -13,8 +13,8 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-# 默认存储根目录（相对于 backend/）
-_DEFAULT_STORAGE_ROOT = Path(__file__).resolve().parents[3] / "storage"
+# 默认存储根目录：backend/storage/
+_DEFAULT_STORAGE_ROOT = Path(__file__).resolve().parents[2] / "storage"
 
 
 def get_avatar_path(visitor_id: int, storage_root: Path | None = None) -> Path:
