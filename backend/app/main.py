@@ -2,9 +2,13 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.routers import visitors, tickets, checkin, stats
+
+_STORAGE_DIR = Path(__file__).resolve().parents[1] / "storage"
+_STORAGE_DIR.mkdir(parents=True, exist_ok=True)
 
 
 @asynccontextmanager
@@ -16,7 +20,7 @@ async def lifespan(app: FastAPI):
     try:
         build_cache(db)
     except Exception:
-        # 数据库未就绪（如测试环境）时跳过缓存预热，不阻断启动
+        # 数据库未就绪（如测试环境）时跳过，不阻断启动
         pass
     finally:
         db.close()
@@ -30,10 +34,17 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# 静态文件：头像图片
-_STORAGE_DIR = Path(__file__).resolve().parents[1] / "storage"
-_STORAGE_DIR.mkdir(parents=True, exist_ok=True)
-app.mount("/static", StaticFiles(directory=str(_STORAGE_DIR)), name="static")
+# CORS：允许 Vue 开发服务器跨域
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# 静态文件服务（头像存储目录）
+app.mount("/storage", StaticFiles(directory=str(_STORAGE_DIR)), name="storage")
 
 # 路由注册
 app.include_router(visitors.router)

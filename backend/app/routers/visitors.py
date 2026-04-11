@@ -73,7 +73,7 @@ def get_visitor(visitor_id: int, request: Request, db: Session = Depends(get_db)
 
     avatar_url: str | None = None
     if visitor.avatar_path:
-        avatar_url = str(request.base_url) + f"static/avatars/{visitor.id}.jpg"
+        avatar_url = str(request.base_url) + f"storage/avatars/{visitor.id}.jpg"
 
     return VisitorDetail(
         id=visitor.id,
