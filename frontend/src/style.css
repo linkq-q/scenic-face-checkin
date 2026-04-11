@@ -1,0 +1,17 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  background: #f0f2f5;
+  color: #303133;
+}
+
+#app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
