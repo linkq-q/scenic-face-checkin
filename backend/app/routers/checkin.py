@@ -1,3 +1,4 @@
+import logging
 import tempfile
 from datetime import date
 from pathlib import Path
@@ -12,6 +13,7 @@ from app.crud import ticket as ticket_crud
 from app.database import get_db
 
 router = APIRouter(prefix="/api/checkin", tags=["checkin"])
+logger = logging.getLogger(__name__)
 
 
 @router.post("/verify")
@@ -35,15 +37,18 @@ async def verify_checkin(
         Path(tmp_path).unlink(missing_ok=True)
 
     if encoding is None:
+        logger.warning("[checkin] no_face: face detection returned None for uploaded file")
         return {"success": False, "reason": "no_face"}
 
     # 2. 从缓存中找最佳匹配游客
     match = get_match(encoding, db)
     if match is None:
+        logger.warning("[checkin] no_match: encoding extracted but no candidate matched")
         return {"success": False, "reason": "no_match"}
 
     visitor_id: int = match["visitor_id"]
     score: float = match["score"]
+    logger.info("[checkin] matched visitor_id=%d score=%.4f visit_date=%s", visitor_id, score, visit_date)
 
     # 3. 检查门票状态
     unused_ticket = checkin_crud.get_unused_ticket(db, visitor_id, visit_date)
@@ -51,7 +56,9 @@ async def verify_checkin(
     if unused_ticket is None:
         # 判断是已核销还是根本没票
         if checkin_crud.has_used_ticket(db, visitor_id, visit_date):
+            logger.warning("[checkin] already_used: visitor_id=%d visit_date=%s", visitor_id, visit_date)
             return {"success": False, "reason": "already_used"}
+        logger.warning("[checkin] no_valid_ticket: visitor_id=%d visit_date=%s", visitor_id, visit_date)
         return {"success": False, "reason": "no_valid_ticket"}
 
     # 4. 核销：将门票改为 used

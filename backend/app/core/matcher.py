@@ -42,7 +42,9 @@ def build_cache(db: Session) -> None:
         _cache = new_cache
         _cache_loaded = True
 
-    logger.info("Encoding cache built: %d entries", len(_cache))
+    logger.info("[matcher] cache built: %d visitors loaded", len(_cache))
+    if len(_cache) == 0:
+        logger.warning("[matcher] cache is empty — no visitors with face_encoding found in DB")
 
 
 def push_to_cache(visitor_id: int, encoding: list[float]) -> None:

@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -6,6 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.routers import visitors, tickets, checkin, stats
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
 _STORAGE_DIR = Path(__file__).resolve().parents[1] / "storage"
 _STORAGE_DIR.mkdir(parents=True, exist_ok=True)
