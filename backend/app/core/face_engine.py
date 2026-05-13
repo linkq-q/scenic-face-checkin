@@ -19,6 +19,9 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+# face_recognition 库推荐的默认阈值；低于此值视为同一人
+FACE_TOLERANCE = 0.6
+
 
 def extract_encoding(image_path: str) -> list[float] | None:
     """
@@ -45,7 +48,7 @@ def extract_encoding(image_path: str) -> list[float] | None:
 def compare_face(
     known_encoding: list[float],
     unknown_encoding: list[float],
-    tolerance: float = 0.45,
+    tolerance: float = FACE_TOLERANCE,
 ) -> tuple[bool, float]:
     """
     比对两个 128 维向量是否属于同一人。
@@ -53,7 +56,7 @@ def compare_face(
     Args:
         known_encoding:   已知人脸的特征向量。
         unknown_encoding: 待识别人脸的特征向量。
-        tolerance:        欧式距离阈值，默认 0.45（严格模式）。
+        tolerance:        欧式距离阈值，默认 FACE_TOLERANCE。
 
     Returns:
         (is_match, score) — score = 1 - distance，越高越相似。
@@ -93,8 +96,7 @@ def find_match(
     best_idx = int(np.argmin(distances))
     best_distance = float(distances[best_idx])
 
-    # 使用与 compare_face 相同的阈值
-    if best_distance > 0.45:
+    if best_distance > FACE_TOLERANCE:
         return None
 
     return {
